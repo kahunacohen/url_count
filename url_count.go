@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -20,7 +21,8 @@ func getBodyLen(url string) (int, error) {
 	log.Printf("Getting body for %s", url)
 	return utf8.RuneCountInString(string(body)), nil
 }
-func getBodyLen2(url string, ch chan struct{}) {
+func getBodyLen2(url string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Error")
@@ -30,7 +32,6 @@ func getBodyLen2(url string, ch chan struct{}) {
 	log.Printf("Getting body for %s", url)
 	charsLen := utf8.RuneCountInString(string(body))
 	log.Printf("chars: %d", charsLen)
-	ch <- struct{}{}
 
 }
 
@@ -49,14 +50,12 @@ func GetBodyLens2() {
 	urls := []string{"https://www.google.com", "https://www.nytimes.com",
 		"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
 		"https://www.adobe.com", "https://wikipedia.org", "https://www.yahoo.com", "https://www.ncbi.nlm.nih.gov"}
-	len := make(chan struct{}, len(urls))
-
+	var wg sync.WaitGroup
 	for _, url := range urls {
-		go getBodyLen2(url, len)
+		wg.Add(1)
+		go getBodyLen2(url, &wg)
 	}
-	for range urls {
-		<-len
-	}
+	wg.Wait()
 
 }
 func main() {
