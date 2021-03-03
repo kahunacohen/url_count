@@ -7,6 +7,10 @@ import (
 	"unicode/utf8"
 )
 
+var urls = []string{"https://www.google.com", "https://www.walmart.com", "https://www.amazon.com", "https://www.nytimes.com",
+	"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
+	"https://www.adobe.com", "https://wikipedia.org", "https://www.yahoo.com", "https://www.ncbi.nlm.nih.gov", "https://npr.org"}
+
 func getBodyLen(url string) (int, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -32,9 +36,6 @@ func getBodyLen2(url string, charLengths chan int) {
 }
 
 func GetBodyLens() {
-	urls := []string{"https://www.google.com", "https://www.nytimes.com",
-		"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
-		"https://www.adobe.com", "https://www.craigslist.com", "https://npr.org"}
 	for _, url := range urls {
 		len, _ := getBodyLen(url)
 		log.Printf("characters: %d", len)
@@ -43,9 +44,6 @@ func GetBodyLens() {
 
 func GetBodyLens2() {
 
-	urls := []string{"https://www.google.com", "https://www.walmart.com", "https://www.amazon.com", "https://www.nytimes.com",
-		"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
-		"https://www.adobe.com", "https://wikipedia.org", "https://www.yahoo.com", "https://www.ncbi.nlm.nih.gov", "https://npr.org"}
 	bodyLengths := make(chan int, len(urls))
 	for _, url := range urls {
 		go getBodyLen2(url, bodyLengths)
@@ -61,5 +59,6 @@ func GetBodyLens2() {
 
 }
 func main() {
+	GetBodyLens()
 	GetBodyLens2()
 }
