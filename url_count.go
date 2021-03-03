@@ -20,7 +20,7 @@ func getBodyLen(url string) (int, error) {
 	log.Printf("Getting body for %s", url)
 	return utf8.RuneCountInString(string(body)), nil
 }
-func getBodyLen2(url string, len chan int) {
+func getBodyLen2(url string, charLengths chan int) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Error")
@@ -28,15 +28,13 @@ func getBodyLen2(url string, len chan int) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	log.Printf("Getting body for %s", url)
-	charsLen := utf8.RuneCountInString(string(body))
-	log.Printf("chars: %d", charsLen)
-	len <- charsLen
+	charLengths <- utf8.RuneCountInString(string(body))
 }
 
 func GetBodyLens() {
 	urls := []string{"https://www.google.com", "https://www.nytimes.com",
 		"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
-		"https://www.adobe.com", "https://www.craigslist.com"}
+		"https://www.adobe.com", "https://www.craigslist.com", "https://npr.org"}
 	for _, url := range urls {
 		len, _ := getBodyLen(url)
 		log.Printf("characters: %d", len)
@@ -45,18 +43,18 @@ func GetBodyLens() {
 
 func GetBodyLens2() {
 
-	urls := []string{"https://www.google.com", "https://www.nytimes.com",
+	urls := []string{"https://www.google.com", "https://www.walmart.com", "https://www.amazon.com", "https://www.nytimes.com",
 		"https://www.trello.com", "https://mytzedakah.com/create-fund/1",
-		"https://www.adobe.com", "https://wikipedia.org", "https://www.yahoo.com", "https://www.ncbi.nlm.nih.gov"}
-	len := make(chan int, len(urls))
+		"https://www.adobe.com", "https://wikipedia.org", "https://www.yahoo.com", "https://www.ncbi.nlm.nih.gov", "https://npr.org"}
+	bodyLengths := make(chan int, len(urls))
 	for _, url := range urls {
-		go getBodyLen2(url, len)
+		go getBodyLen2(url, bodyLengths)
 	}
 	for i := range urls {
-		v := <-len
+		v := <-bodyLengths
 		log.Println(v)
-		if i == 7 {
-			close(len)
+		if i == len(urls)-1 {
+			close(bodyLengths)
 		}
 
 	}
